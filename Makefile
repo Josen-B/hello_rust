@@ -1,3 +1,5 @@
+# Rust版本Makefile
+
 MAKEFLAGS = -sR
 MKDIR = mkdir
 RMDIR = rmdir
@@ -9,46 +11,35 @@ RM = rm
 ASM		= nasm
 RUSTC		= rustc
 LD		= ld
-OBJCOPY		= objcopy
-CARGO		= cargo
+OBJCOPY	= objcopy
 
-ASMBFLAGS	= -f elf64 -w-orphan-labels
-RUSTFLAGS	= -C target-feature=+crt-static -C relocation-model=static -C link-arg=-nostartfiles
-LDFLAGS		= -n -static -T linker.ld -Map HelloOS_Rust.map
+ASMBFLAGS	= -f elf -w-orphan-labels
+RUSTFLAGS	= -C opt-level=s -C panic=abort --target i686-unknown-linux-gnu -C relocation-model=static -C link-arg=-nostdlib -C link-arg=-nostartfiles -C force-unwind-tables=no -C link-arg=-Wl,--gc-sections
+LDFLAGS		= -s -static -T hello_rust.lds -n -Map HelloOS_Rust.map 
 OJCYFLAGS	= -S -O binary
 
 HELLOOS_OBJS :=
-HELLOOS_OBJS += src/entry.o
+HELLOOS_OBJS += entry.o main.o
 HELLOOS_ELF = HelloOS_Rust.elf
 HELLOOS_BIN = HelloOS_Rust.bin
 
-.PHONY : build clean all link bin rust-build
+.PHONY : build clean all link bin
 
-all: clean rust-build link bin
+all: clean build link bin
 
 clean:
 	$(RM) -f *.o *.bin *.elf *.map
-	$(CARGO) clean
 
-rust-build:
-	$(CARGO) build --release --target x86_64-unknown-none
-	$(CP) target/x86_64-unknown-none/release/libhello_os_rust.a libhello_os_rust.a
+build: $(HELLOOS_OBJS)
 
 link: $(HELLOOS_ELF)
-$(HELLOOS_ELF): $(HELLOOS_OBJS) libhello_os_rust.a
-	$(LD) $(LDFLAGS) -o $@ $(HELLOOS_OBJS) -L. -lhello_os_rust
-
+$(HELLOOS_ELF): $(HELLOOS_OBJS)
+	$(LD) $(LDFLAGS) -o $@ $(HELLOOS_OBJS)
 bin: $(HELLOOS_BIN)
 $(HELLOOS_BIN): $(HELLOOS_ELF)
 	$(OBJCOPY) $(OJCYFLAGS) $< $@
 
 %.o : %.asm
 	$(ASM) $(ASMBFLAGS) -o $@ $<
-
-# 创建目标目录
-target-dir:
-	$(MKDIR) -p target/x86_64-unknown-none/release
-
-# 安装目标
-install: all
-	$(DD) if=$(HELLOOS_BIN) of=/dev/sdb bs=512 count=2880 conv=notrunc
+main.o: src/main.rs src/vga.rs
+	$(RUSTC) $(RUSTFLAGS) --emit=obj -o $@ src/main.rs
