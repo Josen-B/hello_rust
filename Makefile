@@ -28,7 +28,7 @@ HELLOOS_BIN = HelloOS_Rust.bin
 all: clean build link bin
 
 clean:
-	$(RM) -f *.o *.bin *.elf *.map
+	$(RM) -rf *.o *.bin *.elf *.map target
 
 build: $(HELLOOS_OBJS)
 
