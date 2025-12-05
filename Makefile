@@ -8,15 +8,15 @@ CD = cd
 DD = dd
 RM = rm
 
-ASM		= nasm
-RUSTC		= rustc
-LD		= ld
+ASM	= nasm
+RUSTC = rustc
+LD = ld
 OBJCOPY	= objcopy
 
-ASMBFLAGS	= -f elf -w-orphan-labels
-RUSTFLAGS	= -C opt-level=s -C panic=abort --target i686-unknown-linux-gnu -C relocation-model=static -C link-arg=-nostdlib -C link-arg=-nostartfiles -C force-unwind-tables=no -C link-arg=-Wl,--gc-sections
-LDFLAGS		= -s -static -T hello_rust.lds -n -Map HelloOS_Rust.map 
-OJCYFLAGS	= -S -O binary
+ASMBFLAGS = -f elf -w-orphan-labels
+RUSTFLAGS = -C opt-level=s -C panic=abort --target i686-unknown-linux-gnu -C relocation-model=static -C link-arg=-nostdlib -C link-arg=-nostartfiles -C force-unwind-tables=no -C link-arg=-Wl,--gc-sections
+LDFLAGS	= -s -static -T hello_rust.lds -n -Map HelloOS_Rust.map 
+OJCYFLAGS = -S -O binary
 
 HELLOOS_OBJS :=
 HELLOOS_OBJS += entry.o main.o
